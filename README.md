@@ -1,6 +1,6 @@
 USTH ICT 2025 Advanced Programming with Python
 =====================================================
-hgghjgjhghj
+I love USTH !!!
 
 Student Info
 =========================
