@@ -1,49 +1,9 @@
-import math
-import numpy as np
 import curses
-
-class Student:
-    def __init__(self, student_id, name, dob):
-        self.student_id = student_id
-        self.name = name
-        self.dob = dob
-        self.gpa = 0  # GPA will be calculated later
-
-    def __str__(self):
-        return f"ID: {self.student_id}, Name: {self.name}, DoB: {self.dob}, GPA: {self.gpa:.2f}"
-
-
-class Course:
-    def __init__(self, course_id, course_name, credits):
-        self.course_id = course_id
-        self.course_name = course_name
-        self.credits = credits
-
-    def __str__(self):
-        return f"ID: {self.course_id}, Name: {self.course_name}, Credits: {self.credits}"
-
-
-class Marks:
-    def __init__(self):
-        self.marks = {}
-
-    def input_marks(self, course, students):
-        print(f"Enter marks for course: {course.course_name} (ID: {course.course_id})")
-        self.marks[course.course_id] = {}
-        for student in students:
-            mark = float(input(f"Enter mark for {student.name} (ID: {student.student_id}): "))
-            rounded_mark = math.floor(mark * 10) / 10  # Round down to 1 decimal place
-            self.marks[course.course_id][student.student_id] = rounded_mark
-
-    def show_marks(self, course, students):
-        if course.course_id not in self.marks:
-            print(f"No marks available for course {course.course_name}.")
-            return
-        print(f"Marks for course {course.course_name}:")
-        for student in students:
-            mark = self.marks[course.course_id].get(student.student_id, "N/A")
-            print(f"{student.name} (ID: {student.student_id}): {mark}")
-
+from input import get_input
+from output import show_message
+from domain.student import Student
+from domain.course import Course
+from domain.mark import Marks
 
 class StudentManagement:
     def __init__(self):
@@ -52,19 +12,19 @@ class StudentManagement:
         self.marks = Marks()
 
     def input_students(self):
-        num_students = int(input("Enter the number of students: "))
+        num_students = int(get_input("Enter the number of students: "))
         for _ in range(num_students):
-            student_id = input("Enter student ID: ")
-            name = input("Enter student name: ")
-            dob = input("Enter student DoB (YYYY-MM-DD): ")
+            student_id = get_input("Enter student ID: ")
+            name = get_input("Enter student name: ")
+            dob = get_input("Enter student DoB (YYYY-MM-DD): ")
             self.students.append(Student(student_id, name, dob))
 
     def input_courses(self):
-        num_courses = int(input("Enter the number of courses: "))
+        num_courses = int(get_input("Enter the number of courses: "))
         for _ in range(num_courses):
-            course_id = input("Enter course ID: ")
-            course_name = input("Enter course name: ")
-            credits = int(input("Enter course credits: "))
+            course_id = get_input("Enter course ID: ")
+            course_name = get_input("Enter course name: ")
+            credits = int(get_input("Enter course credits: "))
             self.courses.append(Course(course_id, course_name, credits))
 
     def list_students(self, stdscr):
@@ -85,7 +45,7 @@ class StudentManagement:
 
     def input_marks(self):
         self.list_courses()
-        course_id = input("Enter the course ID to input marks: ")
+        course_id = get_input("Enter the course ID to input marks: ")
         selected_course = next((course for course in self.courses if course.course_id == course_id), None)
         if selected_course:
             self.marks.input_marks(selected_course, self.students)
@@ -95,12 +55,12 @@ class StudentManagement:
     def show_student_marks(self, stdscr):
         stdscr.clear()
         self.list_courses(stdscr)
-        course_id = input("Enter the course ID to view marks: ")
+        course_id = get_input("Enter the course ID to view marks: ")
         selected_course = next((course for course in self.courses if course.course_id == course_id), None)
         if selected_course:
             self.marks.show_marks(selected_course, self.students)
         else:
-            stdscr.addstr("Invalid course ID!\n")
+            show_message(stdscr, "Invalid course ID!")
 
     def calculate_gpa(self):
         for student in self.students:
@@ -169,12 +129,10 @@ class StudentManagement:
                     self.show_student_marks(stdscr)
                 elif choice == "5":
                     self.calculate_gpa()
-                    stdscr.addstr("GPA calculated for all students.\nPress any key to return to the menu.")
-                    stdscr.getch()
+                    show_message(stdscr, "GPA calculated for all students.")
                 elif choice == "6":
                     self.sort_students_by_gpa()
-                    stdscr.addstr("Students sorted by GPA!\nPress any key to return to the menu.")
-                    stdscr.getch()
+                    show_message(stdscr, "Students sorted by GPA!")
                 elif choice == "7":
                     self.leaderboard(stdscr)
                 elif choice == "8":
@@ -182,8 +140,7 @@ class StudentManagement:
                 elif choice == "9":
                     break
                 else:
-                    stdscr.addstr("Invalid option! Press any key to try again.")
-                    stdscr.getch()
+                    show_message(stdscr, "Invalid option! Press any key to try again.")
 
         curses.wrapper(curses_app)
 
