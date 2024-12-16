@@ -1,6 +1,6 @@
 import math
 import numpy as np
-import random
+import _curses
 
 class Student:
     def __init__(self, student_id, name, dob):
@@ -67,15 +67,21 @@ class StudentManagement:
             credits = int(input("Enter course credits: "))
             self.courses.append(Course(course_id, course_name, credits))
 
-    def list_students(self):
-        print("List of students:")
+    def list_students(self, stdscr):
+        stdscr.clear()
+        stdscr.addstr("List of students:\n")
         for student in self.students:
-            print(student)
+            stdscr.addstr(str(student) + "\n")
+        stdscr.addstr("\nPress any key to return to the menu.")
+        stdscr.getch()
 
-    def list_courses(self):
-        print("List of courses:")
+    def list_courses(self, stdscr):
+        stdscr.clear()
+        stdscr.addstr("List of courses:\n")
         for course in self.courses:
-            print(course)
+            stdscr.addstr(str(course) + "\n")
+        stdscr.addstr("\nPress any key to return to the menu.")
+        stdscr.getch()
 
     def input_marks(self):
         self.list_courses()
@@ -86,14 +92,15 @@ class StudentManagement:
         else:
             print("Invalid course ID!")
 
-    def show_student_marks(self):
-        self.list_courses()
+    def show_student_marks(self, stdscr):
+        stdscr.clear()
+        self.list_courses(stdscr)
         course_id = input("Enter the course ID to view marks: ")
         selected_course = next((course for course in self.courses if course.course_id == course_id), None)
         if selected_course:
             self.marks.show_marks(selected_course, self.students)
         else:
-            print("Invalid course ID!")
+            stdscr.addstr("Invalid course ID!\n")
 
     def calculate_gpa(self):
         for student in self.students:
@@ -108,13 +115,16 @@ class StudentManagement:
     def sort_students_by_gpa(self):
         self.students.sort(key=lambda s: s.gpa, reverse=True)
 
-    def leaderboard(self):
-        print("\nLeaderboard:")
+    def leaderboard(self, stdscr):
+        stdscr.clear()
+        stdscr.addstr("Leaderboard:\n")
         for idx, student in enumerate(sorted(self.students, key=lambda s: s.gpa, reverse=True), start=1):
-            print(f"{idx}. {student.name} (GPA: {student.gpa:.2f})")
+            stdscr.addstr(f"{idx}. {student.name} (GPA: {student.gpa:.2f})\n")
+        stdscr.addstr("\nPress any key to return to the menu.")
+        stdscr.getch()
 
-    def performance_groups(self):
-        print("\nPerformance Groups:")
+    def performance_groups(self, stdscr):
+        stdscr.clear()
         groups = {"Top Performers": [], "Average": [], "Needs Improvement": []}
         for student in self.students:
             if student.gpa >= 3.5:
@@ -125,64 +135,57 @@ class StudentManagement:
                 groups["Needs Improvement"].append(student)
 
         for group, members in groups.items():
-            print(f"\n{group}:")
+            stdscr.addstr(f"\n{group}:\n")
             for member in members:
-                print(f"- {member.name} (GPA: {member.gpa:.2f})")
+                stdscr.addstr(f"- {member.name} (GPA: {member.gpa:.2f})\n")
 
-    def predictive_gpa(self, student_id):
-        selected_student = next((s for s in self.students if s.student_id == student_id), None)
-        if not selected_student:
-            print("Invalid student ID!")
-            return
+        stdscr.addstr("\nPress any key to return to the menu.")
+        stdscr.getch()
 
-        print(f"\nPredictive GPA for {selected_student.name}:")
-        for course in self.courses:
-            print(f"If you score 4.0 in {course.course_name}, your GPA will increase.")
+    def decorated_ui(self):
+        def curses_app(stdscr):
+            while True:
+                stdscr.clear()
+                stdscr.addstr("Options:\n")
+                stdscr.addstr("1. List students\n")
+                stdscr.addstr("2. List courses\n")
+                stdscr.addstr("3. Input marks for a course\n")
+                stdscr.addstr("4. Show student marks for a course\n")
+                stdscr.addstr("5. Calculate and display GPA\n")
+                stdscr.addstr("6. Sort students by GPA\n")
+                stdscr.addstr("7. Show leaderboard\n")
+                stdscr.addstr("8. Group students by performance\n")
+                stdscr.addstr("9. Exit\n")
+                stdscr.addstr("Select an option: ")
+                choice = stdscr.getstr().decode("utf-8")
 
-# Main program
-if __name__ == "__main__":
-    sm = StudentManagement()
-    sm.input_students()
-    sm.input_courses()
+                if choice == "1":
+                    self.list_students(stdscr)
+                elif choice == "2":
+                    self.list_courses(stdscr)
+                elif choice == "3":
+                    self.input_marks()
+                elif choice == "4":
+                    self.show_student_marks(stdscr)
+                elif choice == "5":
+                    self.calculate_gpa()
+                    stdscr.addstr("GPA calculated for all students.\nPress any key to return to the menu.")
+                    stdscr.getch()
+                elif choice == "6":
+                    self.sort_students_by_gpa()
+                    stdscr.addstr("Students sorted by GPA!\nPress any key to return to the menu.")
+                    stdscr.getch()
+                elif choice == "7":
+                    self.leaderboard(stdscr)
+                elif choice == "8":
+                    self.performance_groups(stdscr)
+                elif choice == "9":
+                    break
+                else:
+                    stdscr.addstr("Invalid option! Press any key to try again.")
+                    stdscr.getch()
 
-    while True:
-        print("\nOptions:")
-        print("1. List students")
-        print("2. List courses")
-        print("3. Input marks for a course")
-        print("4. Show student marks for a course")
-        print("5. Calculate and display GPA")
-        print("6. Sort students by GPA")
-        print("7. Show leaderboard")
-        print("8. Group students by performance")
-        print("9. Exit")
-
-        choice = input("Select an option: ")
-        if choice == "1":
-            sm.list_students()
-        elif choice == "2":
-            sm.list_courses()
-        elif choice == "3":
-            sm.input_marks()
-        elif choice == "4":
-            sm.show_student_marks()
-        elif choice == "5":
-            sm.calculate_gpa()
-            sm.list_students()
-        elif choice == "6":
-            sm.sort_students_by_gpa()
-            print("Students sorted by GPA!")
-        elif choice == "7":
-            sm.leaderboard()
-        elif choice == "8":
-            sm.performance_groups()
-        elif choice == "9":
-            print("Exiting the program.")
-            break
-        else:
-            print("Invalid option!")
-
-
+        curses.wrapper(curses_app)
 
 # Main program
 if __name__ == "__main__":
